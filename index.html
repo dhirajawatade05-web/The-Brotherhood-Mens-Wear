@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brotherhood - Menswear, Kids & Toys</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="settings.json"></script>
+    <style>
+        /* 100% Pure Full-Screen Immersive Overlay Style */
+        .product-display-section {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 99999; /* Highest priority so it covers everything */
+            overflow-y: auto;
+            opacity: 0;
+            transform: scale(0.97);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-sizing: border-box;
+            padding: 30px 70px;
+            margin: 0;
+        }
+
+        
+
+        /* Active class to trigger full screen open */
+        .product-display-section.open-fullscreen {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .full-screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .close-section-btn {
+            background: #111;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .close-section-btn:hover {
+            background: #ff4d4d;
+        }
+
+        @media (max-width: 768px) {
+            .product-display-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header>
+        <div class="logo">
+            <h1>The Brotherhood</h1>
+            <p>Menswear, Kids & Toys | Pandharpur</p>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search products..." onkeyup="searchItems()">
+            <button onclick="searchItems()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="nav-right">
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#categories">Categories</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            <button class="cart-icon-btn" onclick="toggleCart()">
+                <i class="fa-solid fa-cart-shopping"></i> <span id="cartCount">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h2>Welcome to The Brotherhood</h2>
+            <p>Your ultimate destination for Men's Fashion, Kids Clothing, and Toys in Pandharpur</p>
+            <a href="#categories" class="btn">Explore Collections</a>
+        </div>
+    </section>
+
+    <!-- Main Categories Overview Section -->
+    <section id="categories" class="categories-section">
+        <h2>Our Main Collections</h2>
+        <p class="section-desc">Click on any category below to open a full-screen dedicated showcase.</p>
+        
+        <div class="main-cat-grid">
+            <div class="main-cat-card" onclick="openCategory('mens')">
+                <i class="fa-solid fa-user-tie"></i>
+                <h3>Men's Wear</h3>
+                <p>Trendy shirts, jeans, t-shirts, formals, and ethnic wear designed for ultimate comfort.</p>
+                <button class="btn">View Products</button>
+            </div>
+
+            <div class="main-cat-card" onclick="openCategory('kids')">
+                <i class="fa-solid fa-baby"></i>
+                <h3>Kids Clothing</h3>
+                <p>Colorful, soft, and durable clothing sets, party wear, and casuals for kids.</p>
+                <button class="btn">View Products</button>
+            </div>
+
+            <div class="main-cat-card" onclick="openCategory('toys')">
+                <i class="fa-solid fa-gamepad"></i>
+                <h3>Toys & Games</h3>
+                <p>Engaging educational toys, action figures, remote control cars, and indoor games.</p>
+                <button class="btn">View Products</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 100% Full-Screen Immersive Product Display Overlay -->
+    <div id="productDisplaySection" class="product-display-section">
+        <div class="full-screen-header">
+            <div>
+                <h2 id="categoryTitle" style="font-size: 30px; color: #123; margin-bottom: 5px;"></h2>
+                <p id="categoryDesc" style="color: #666; font-size: 15px; margin: 0;"></p>
+            </div>
+            <button class="close-section-btn" onclick="closeCategorySection()"><i class="fa-solid fa-xmark"></i> Close </button>
+        </div>
+        
+        <div class="category-grid" id="dynamicProductGrid">
+            <!-- Products will load here dynamically -->
+        </div>
+    </div>
+
+    <!-- Slide-out Shopping Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3>Your Shopping Cart</h3>
+            <button class="close-cart" onclick="toggleCart()">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItemsContainer">
+            <p style="color: #777; text-align: center;">Your cart is empty.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="total-amount">
+                <span>Total:</span>
+                <span id="cartTotal">₹0</span>
+            </div>
+            <div class="checkout-btns">
+                <button class="whatsapp-btn" onclick="openCustomerModal('WhatsApp Order')">
+                    <i class="fa-brands fa-whatsapp"></i> Order via WhatsApp
+                </button>
+                <button class="upi-btn" onclick="openUpiModal()">
+                    <i class="fa-solid fa-qrcode"></i> Pay via UPI / QR Code
+                </button>
+                <button class="cod-btn" onclick="openCustomerModal('Cash on Delivery')">
+                    <i class="fa-solid fa-truck"></i> Cash on Delivery
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div class="modal-overlay" id="customerModal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeCustomerModal()">&times;</button>
+            <h3 id="modalTitle">Enter Your Details</h3>
+            <input type="text" id="custName" placeholder="Enter Your Full Name" required>
+            <input type="tel" id="custPhone" placeholder="Enter Mobile Number" required>
+            <input type="text" id="custAddress" placeholder="Delivery Address / Area in Pandharpur" required>
+            <button class="btn" style="width: 100%; margin-top: 10px;" onclick="submitOrderToWhatsApp()">Send Order on WhatsApp</button>
+        </div>
+    </div>
+
+    <!-- UPI Payment Modal Popup -->
+    <div class="modal-overlay" id="upiModal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeUpiModal()">&times;</button>
+            <h3>Pay via UPI</h3>
+            <p>Total Payable Amount: <strong id="modalTotal" style="color: #28a745;">₹0</strong></p>
+            
+            <img src="qr.jpeg" alt="Paytm UPI QR Code" class="qr-code-img" id="upiQrImg">
+            
+            <p style="font-size: 13px; color: #666; margin: 10px 0 5px 0;">Scan QR using PhonePe, Paytm, or GPay or click below:</p>
+            
+            <a id="directUpiLink" href="#" class="btn" style="background-color: #28a745; color: white; width: 100%; text-decoration: none; margin-bottom: 10px; display: inline-block; text-align: center;">
+                <i class="fa-solid fa-mobile-screen-button"></i> Pay Now via App
+            </a>
+
+            <p style="font-size: 13px; color: #666;">Or copy UPI ID:</p>
+            <div class="upi-id-box" id="upiIdText">paytmqr6c602i@ptys</div>
+            
+            <button class="btn" style="width: 100%; margin-top: 5px;" onclick="copyUpiId()">Copy UPI ID</button>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="about-content">
+            <h2>About Our Shop</h2>
+            <p>Located in the heart of Pandharpur, <strong>The Brotherhood</strong> is dedicated to bringing quality fashion and happiness to your family. From stylish outfits for men to adorable children's wear and fun-filled toys, we ensure the best quality at the best prices.</p>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer id="contact">
+        <div class="footer-content">
+            <h3>Visit Us Today!</h3>
+            <p><i class="fa-solid fa-location-dot"></i> Location: Shop No. 4, Vitthal Rukhmini Complex, KBP College Chowk, Pandharpur -413304</p>
+            <p><i class="fa-solid fa-phone"></i> Phone: +91 9823428204</p>
+            <p><i class="fa-solid fa-clock"></i> Timings: 9:00 AM – 9:00 PM (All Days)</p>
+            
+            <div class="social-icons">
+                <a href="https://www.instagram.com/the_brotherhood_mens_wear?stkn=MTYyOHA1bHQxcGkyaw==" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://wa.me/919823428204" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 The Brotherhood Menswear & Kids. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        let cart = [];
+        let currentPaymentMethod = '';
+
+        const storeData = {
+            mens: {
+                title: "Men's Wear Collection",
+                desc: "Trendy shirts, jeans, t-shirts, formals, and ethnic wear designed for ultimate comfort.",
+                products: [
+                    { name: "Casual Cotton Shirt", price: 799, desc: "Breathable cotton regular fit shirt for daily outings.", img: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Formal Oxford Shirt", price: 999, desc: "Premium office wear formal shirt with a crisp finish.", img: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Slim Fit Denim Jeans", price: 1299, desc: "Stretchable, durable, and stylish dark blue denim.", img: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Graphic Printed T-Shirt", price: 499, desc: "Trendy round-neck cotton t-shirt with modern prints.", img: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Classic Polo T-Shirt", price: 649, desc: "Comfortable collared polo t-shirt for smart casual looks.", img: "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Formal Trouser", price: 1099, desc: "Wrinkle-free tailored trousers for business meetings.", img: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Festive Kurta Pyjama", price: 1499, desc: "Elegant ethnic wear set crafted for festivals and weddings.", img: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Checkered Flannel Shirt", price: 899, desc: "Warm check pattern shirt ideal for casual styling.", img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Distressed Ripped Jeans", price: 1399, desc: "Modern fashion style denim jeans with ripped details.", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Solid Oversized T-Shirt", price: 599, desc: "Heavyweight cotton drop-shoulder oversized tee.", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Linen Summer Shirt", price: 949, desc: "Lightweight breathable fabric shirt for hot weather.", img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Casual Chino Pants", price: 1199, desc: "Versatile stretchable chinos matching shirts and tees.", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Party Wear Blazer", price: 2499, desc: "Sharp tailored slim-fit blazer designed for parties.", img: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Hooded Sweatshirt (Hoodie)", price: 1199, desc: "Fleece-lined cozy hoodie with front pocket.", img: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Cotton Track Pants", price: 699, desc: "Comfortable stretchable joggers for gym and relaxing.", img: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Striped Casual Shirt", price: 849, desc: "Stylish vertical stripe pattern shirt.", img: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Traditional Nehru Jacket", price: 1299, desc: "Ethnic sleeveless waistcoat to elevate kurtas.", img: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Cargo Utility Pants", price: 1349, desc: "Rugged multi-pocket cargo trousers.", img: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Henley Neck T-Shirt", price: 599, desc: "Full sleeve button-placket casual t-shirt.", img: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Classic Denim Jacket", price: 1799, desc: "Rugged blue denim jacket that never goes out of style.", img: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Silk Blend Sherwani Kurta", price: 1899, desc: "Rich textured long ethnic kurta for grand weddings.", img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Dry-Fit Active Sports Tee", price: 549, desc: "Moisture-wicking breathable fabric for training.", img: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Formal 3-Piece Suit Set", price: 3999, desc: "Complete professional suit including blazer and trousers.", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Jogger Cargo Pants", price: 1249, desc: "Hybrid comfortable style combining joggers and cargo.", img: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Velvet Party Wear Shirt", price: 1149, desc: "Glossy touch premium fabric shirt for night outs.", img: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=500&q=80" }
+                ]
+            },
+            kids: {
+                title: "Kids Clothing Collection",
+                desc: "Colorful, soft, and durable clothing sets, party wear, and casuals for kids.",
+                products: [
+                    { name: "Kids Cotton T-Shirt & Shorts Set", price: 499, desc: "Soft breathable daily wear matching set for kids.", img: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Boys Festive Kurta Set", price: 799, desc: "Traditional ethnic kurta pyjama for festive occasions.", img: "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Baby Girl Party Frock", price: 899, desc: "Beautiful designer party wear dress with cute bows.", img: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Kids Denim Dungarees", price: 999, desc: "Stylish and playful denim overall dungaree set.", img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=500&q=80" }
+                ]
+            },
+            toys: {
+                title: "Toys & Games Collection",
+                desc: "Engaging educational toys, action figures, remote control cars, and indoor games.",
+                products: [
+                    { name: "Remote Control Racing Car", price: 999, desc: "High-speed rechargeable RC car with LED headlights.", img: "https://images.unsplash.com/photo-1594787318286-3d83569d2f01?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Educational Building Blocks Set", price: 699, desc: "Creative interlocking plastic blocks for kids' imagination.", img: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Super Action Hero Figure", price: 499, desc: "Articulated movable superhero action toy.", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80" },
+                    { name: "Board Game Family Pack", price: 599, desc: "Classic indoor multi-game set for family fun nights.", img: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=500&q=80" }
+                ]
+            }
+        };
+
+        function openCategory(catKey) {
+            const section = document.getElementById('productDisplaySection');
+            const title = document.getElementById('categoryTitle');
+            const desc = document.getElementById('categoryDesc');
+            const grid = document.getElementById('dynamicProductGrid');
+
+            const data = storeData[catKey];
+            title.innerText = data.title;
+            desc.innerText = data.desc;
+            grid.innerHTML = '';
+
+            data.products.forEach(prod => {
+                grid.innerHTML += `
+                    <div class="card">
+                        <img src="${prod.img}" alt="${prod.name}">
+                        <div class="card-body">
+                            <div>
+                                <h3>${prod.name}</h3>
+                                <p>${prod.desc}</p>
+                            </div>
+                            <div>
+                                <div class="price">₹${prod.price}</div>
+                                <button class="btn" onclick="addToCart('${prod.name}', ${prod.price})">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            section.classList.add('open-fullscreen');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCategorySection() {
+            const section = document.getElementById('productDisplaySection');
+            section.classList.remove('open-fullscreen');
+            document.body.style.overflow = 'auto';
+        }
+
+        function toggleCart() {
+            document.getElementById('cartDrawer').classList.toggle('open');
+        }
+
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ name, price, qty: 1 });
+            }
+            updateCartUI();
+            toggleCart();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cartItemsContainer');
+            const count = document.getElementById('cartCount');
+            const totalElement = document.getElementById('cartTotal');
+
+            let totalQty = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="color: #777; text-align: center;">Your cart is empty.</p>';
+            } else {
+                container.innerHTML = '';
+                cart.forEach((item, index) => {
+                    totalQty += item.qty;
+                    totalPrice += item.price * item.qty;
+                    container.innerHTML += `
+                        <div class="cart-item">
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small>₹${item.price} × ${item.qty}</small>
+                            </div>
+                            <button onclick="removeFromCart(${index})" style="background: none; border: none; color: red; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            }
+
+            count.innerText = totalQty;
+            totalElement.innerText = `₹${totalPrice}`;
+            document.getElementById('modalTotal').innerText = `₹${totalPrice}`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function openCustomerModal(method) {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            currentPaymentMethod = method;
+            document.getElementById('modalTitle').innerText = `Details for ${method}`;
+            document.getElementById('customerModal').style.display = 'flex';
+        }
+
+        function closeCustomerModal() {
+            document.getElementById('customerModal').style.display = 'none';
+        }
+
+        function openUpiModal() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            let totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('modalTotal').innerText = `₹${totalPrice}`;
+            
+            const upiId = "paytmqr6c602i@ptys";
+            const upiLink = `upi://pay?pa=${upiId}&pn=The%20Brotherhood&am=${totalPrice}&cu=INR`;
+            document.getElementById('directUpiLink').setAttribute('href', upiLink);
+
+            document.getElementById('upiModal').style.display = 'flex';
+        }
+
+        function closeUpiModal() {
+            document.getElementById('upiModal').style.display = 'none';
+        }
+
+        function copyUpiId() {
+            const upiText = document.getElementById('upiIdText').innerText;
+            navigator.clipboard.writeText(upiText);
+            alert('UPI ID copied to clipboard: ' + upiText);
+        }
+
+        function submitOrderToWhatsApp() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+
+            if (!name || !phone || !address) {
+                alert('Please fill in all customer details.');
+                return;
+            }
+
+            let orderText = `*New Order - The Brotherhood*%0A%0A*Customer Name:* ${name}%0A*Phone:* ${phone}%0A*Address:* ${address}%0A*Payment Method:* ${currentPaymentMethod || 'WhatsApp Order'}%0A%0A*Items:*%0A`;
+            
+            let total = 0;
+            cart.forEach(item => {
+                orderText += `- ${item.name} (${item.qty}x) : ₹${item.price * item.qty}%0A`;
+                total += item.price * item.qty;
+            });
+
+            orderText += `%0A*Total Amount: ₹${total}*`;
+
+            const shopWhatsApp = "919823428204";
+            const whatsappUrl = `https://wa.me/${shopWhatsApp}?text=${orderText}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function searchItems() {
+            let query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            const section = document.getElementById('productDisplaySection');
+            const title = document.getElementById('categoryTitle');
+            const desc = document.getElementById('categoryDesc');
+            const grid = document.getElementById('dynamicProductGrid');
+
+            if (query === "") {
+                closeCategorySection();
+                return;
+            }
+
+            let matchedProducts = [];
+            Object.keys(storeData).forEach(key => {
+                let productsList = storeData[key].products;
+                productsList.forEach(p => {
+                    if (p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)) {
+                        matchedProducts.push(p);
+                    }
+                });
+            });
+
+            title.innerText = `Search Results for "${query}"`;
+            desc.innerText = `Found ${matchedProducts.length} matching products.`;
+            grid.innerHTML = '';
+
+            if (matchedProducts.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777;">No products found matching your search.</p>';
+            } else {
+                matchedProducts.forEach(prod => {
+                    grid.innerHTML += `
+                        <div class="card">
+                            <img src="${prod.img}" alt="${prod.name}">
+                            <div class="card-body">
+                                <div>
+                                    <h3>${prod.name}</h3>
+                                    <p>${prod.desc}</p>
+                                </div>
+                                <div>
+                                    <div class="price">₹${prod.price}</div>
+                                    <button class="btn" onclick="addToCart('${prod.name}', ${prod.price})">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            section.classList.add('open-fullscreen');
+            document.body.style.overflow = 'hidden';
+        }
+    </script>
+</body>
+</html>
